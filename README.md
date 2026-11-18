@@ -1,2 +1,1 @@
-# anamnesis
 # bayes-filters
