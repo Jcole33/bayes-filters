@@ -4,7 +4,7 @@ Discovery for [requirements.md](requirements.md). It covers what exists, the sta
 
 ## 1. What exists
 
-- **`Jcole33/bayes-filters`** (GitHub, public, default branch `main`, at `b239a9e` on 2026-11-22): holds no code. `main` has a one-line `README.md` (`# bayes-filters`), plus `GLOSSARY.md`, `docs/adr/0001` to `0003` and `stories/bayes-filters-uwi3q/`, which the earlier story's approved documents added. There are no other branches and no pull requests. `Jcole33/bayes-filter` returns a 301 to the same repository id (1461799708), which confirms the rename. The build replaces the README with the B3 one and leaves the other files alone, working on a branch off `main` that goes in through a pull request. A force-push is never needed.
+- **`Jcole33/bayes-filters`** (GitHub, public, default branch `main`, at `b239a9e` on 2026-11-22): holds no code. `main` has a one-line `README.md` (`# bayes-filters`), plus `GLOSSARY.md`, `docs/adr/0001` to `0003` and `stories/bayes-filters-uwi3q/`, which the earlier story's approved documents added. There are no other branches and no pull requests. `Jcole33/bayes-filter` returns a 301 to the same repository id (1461799708), which confirms the rename. The build replaces only the README with the B3 one and leaves the other files alone, including this story's `stories/bayes-filters2-te8ir/` once it is added (Constraints).
 - **No existing code** to reuse. The libraries that have filters (FilterPy, PythonRobotics) must not be vendored or imported, because of E3. They are useful only as background reading for the user.
 - **Dependency versions on PyPI (2026-11-18, re-checked unchanged on 2026-11-22)**, checked against Python 3.11 (B1):
 
@@ -36,7 +36,7 @@ Discovery for [requirements.md](requirements.md). It covers what exists, the sta
 | **PyQtGraph** (0.14, found by research) | Needs a Qt binding: PySide6 6.12 is a large set of wheels (the metapackage pulls WebEngine and more), and PyQt6 is smaller. Qt under WSLg works but needs extra xcb libraries on some distributions. | Very fast scatter (thousands of points at high frame rates), image items for grids, and plot widgets. Ellipses must be drawn by hand as curves. | Same harness. | Same harness. |
 | **IR-SIM** (`ir-sim` 2.12, found by research) | Pip install. It depends on shapely, pyyaml, imageio and loguru. | Matplotlib-based robot simulator. Its world and robot rendering is built for planning and control, so beliefs and time plots would still be custom Matplotlib code. | It has its own YAML world and robot abstractions, which would wrap or compete with the C1 scenario definition. | It takes a seed, but its noise models are not the C3 velocity model, so the simulation would be replaced anyway. |
 
-**Recommendation: keep plain Python with Matplotlib (ADR-0001). No switch, so A2 needs no user approval and ADR-0001 can be marked accepted (no longer provisional) once the comparison lands.**
+**Recommendation: keep plain Python with Matplotlib (ADR-0001). No switch, so A2 needs no user approval, the build leaves ADR-0001 unchanged, and the site list needs no widening.**
 
 - ROS2, RViz and Gazebo fail on setup and plug-in ease for a single-machine learning project. Only RViz draws beliefs well, and it still needs a second tool for the time plots. What ROS is good at (drivers, distributed nodes, real robots) is outside this story's scope (see Non-goals).
 - Rerun is the strongest alternative: its timeline would replace much of G3. It loses on three counts. It adds runtime dependencies beyond the Constraints' NumPy/SciPy/Matplotlib, its rendering on WSLg is the least predictable piece of the whole stack, and G7 (headless rendering of a step to an image file, used by tests) would need a second rendering path anyway.
@@ -69,7 +69,7 @@ src/bayes_bench/
   _cli.py                 # argparse, entry point `bayes-bench`
 filters/placeholders/     # dead_reckoning_gaussian.py, dead_reckoning_particles.py (E1)
 benchmarks/fps-filters/   # fps_filters.py: four 2,000-particle subclasses (G6)
-docs/writing-a-filter.md, docs/stack-comparison.md, docs/adr/
+docs/writing-a-filter.md, docs/stack-comparison.md   # docs/adr/ exists; the build does not edit it
 tests/
 ```
 
@@ -282,15 +282,8 @@ Conclusions:
 | Reflection test for `bimodal` needs the simulator's noise draws | `_sim` returns its ε draws in a private field. Only tests read it. |
 | Accidental public names in the package or on model objects | Underscore submodules (§3), property-based model classes, exact allowlist tests (I1). |
 | Python 3.11 floor not exercised (sandbox has 3.14) | `uv python install 3.11` + `uv venv --seed -p 3.11` + `pip install -e .[dev]` + `pytest` once before the PR. |
-| `main` already holds the story documents (`GLOSSARY.md`, `docs/adr/`, `stories/`) | The build branches off `main`, replaces only the README and leaves those files untouched, through a PR (§1). |
 
 ## 8. What later stages need
 
 - **Repo:** `Jcole33/bayes-filters` only. Cloning, pushing the work branch and opening the PR go through that repo grant, so `sites.txt` needs no `github.com` entry.
-- **Sites:**
-  - `pypi.org` and `files.pythonhosted.org`, for pip and uv installs of NumPy, SciPy, Matplotlib, pytest and setuptools;
-  - `releases.astral.sh`, for `uv python install 3.11` to test the Python floor.
-
-  Each site is limited to the path prefix that pip or uv actually uses (`/simple/`, `/packages/`, `/github/python-build-standalone/`). pip's self-version check uses `/pypi/pip/json`, and failing it does no harm.
-
-  The stack comparison is drafted in §2 with its sources named, so the build needs no further web access. This is deliberate: the build writes `docs/stack-comparison.md` from §2 and does not re-fetch the sources.
+- **Sites:** `proposed/sites.txt`, each limited to the path glob pip or uv uses (PyPI for the packages and setuptools, `releases.astral.sh` for Python 3.11). pip's self-version check uses `/pypi/pip/json`, and failing it does no harm. The build writes `docs/stack-comparison.md` from §2 and does not re-fetch its sources.
