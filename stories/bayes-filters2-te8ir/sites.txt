@@ -1,0 +1,3 @@
+pypi.org:443 GET /simple/**
+files.pythonhosted.org:443 GET /packages/**
+releases.astral.sh:443 GET /github/python-build-standalone/**
